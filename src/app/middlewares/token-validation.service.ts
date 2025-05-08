@@ -12,10 +12,6 @@ export class TokenValidationService {
   }
 
   async validateToken(token: string): Promise<any> {
-    if (token === process.env.AUTH_TOKEN_MS) {
-      return true;
-    }
-
     if (!token) {
       throw new Error('No token provided');
     }
