@@ -4,6 +4,9 @@ import { Model } from 'mongoose';
 import { UserModel } from 'src/app/schemas/user.schema';
 import { PasswordUtil } from 'src/app/utils/passord.util';
 import { LoginDto } from './dto/login.dto';
+import * as fs from 'fs'
+import { join } from 'path';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +14,25 @@ export class AuthService {
     @InjectModel(UserModel.name) private userModel: Model<UserModel>,
     private readonly passwordUtil: PasswordUtil,
   ) {}
+
+
+  async createJWT({userId, role}: {userId: string, role: string}): Promise<string> {
+    try {
+      const privateKey = fs.readFileSync(join(process.cwd(), 'keys/qp_api.pem'), 'utf8');
+      const token = jwt.sign(
+        {uuid: userId, role}, 
+        privateKey, 
+        {
+          algorithm: 'RS256',
+          expiresIn: '7d',
+          keyid: '1'
+        }, 
+      )
+      return token
+    } catch (error) {
+      throw new Error(`Error with the signUpUser method auth.service: ${error.message}`);
+    }
+  }
 
   async validateUser(loginDto: LoginDto) {
     const user = await this.userModel.findOne({ email: loginDto.email });
@@ -30,7 +52,8 @@ export class AuthService {
       email: user.email,
       role: user.role,
       name: user.name,
-      lastName: user.lastName
+      lastName: user.lastName,
+      token: await this.createJWT({userId: user._id.toString(), role: user.role})
     };
   }
 }
