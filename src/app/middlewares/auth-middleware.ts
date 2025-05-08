@@ -8,10 +8,8 @@ export class AuthTokenMiddleware implements NestMiddleware {
   async use(req: any, res, next: () => void) {
     try { 
       const baseUrl = req.baseUrl             
-      if(baseUrl.includes('/.well-known/jwks.json') || (req.body.query != undefined && req.body.query.includes('logIn')) || baseUrl.includes('credit-request') || baseUrl.includes('getCollectionsInfo')) return next() 
-        
       console.log({baseUrl});
-      
+      if(baseUrl.includes('/.well-known/jwks.json') || baseUrl.includes('/auth/login') || baseUrl.includes('credit-request') || baseUrl.includes('getCollectionsInfo')) return next();
       
       const token = req.headers.authorization?.split(' ')[1];
       
