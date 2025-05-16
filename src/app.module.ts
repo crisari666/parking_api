@@ -9,6 +9,7 @@ import { ConfigModule } from './config/config.module';
 import { AuthTokenMiddleware } from './app/middlewares/auth-middleware';
 import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { TokenValidationService } from './app/middlewares/token-validation.service';
+import { BusinessModule } from './business/business.module';
 @Module({
   imports: [
     ConfigModuleNest.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -16,6 +17,7 @@ import { TokenValidationService } from './app/middlewares/token-validation.servi
     UsersModule,
     AuthModule,
     ConfigModule,
+    BusinessModule,
 
   ],
   controllers: [AppController],

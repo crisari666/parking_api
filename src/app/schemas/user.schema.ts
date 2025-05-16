@@ -4,6 +4,7 @@ import { Document, HydratedDocument } from 'mongoose';
 export enum UserRole {
   admin = 'admin',
   user = 'user',
+  worker = 'worker',
 } 
 
 export type UserDocument = HydratedDocument<UserModel>;

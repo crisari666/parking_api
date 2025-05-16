@@ -15,7 +15,6 @@ export class AuthTokenMiddleware implements NestMiddleware {
       
       try {
         const payload = await this.tokenValidationService.validateToken(token);
-        console.log({payload});
         req.headers.user = payload;
         next();
       } catch (error) {

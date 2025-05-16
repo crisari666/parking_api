@@ -35,7 +35,9 @@ export class AuthService {
   }
 
   async validateUser(loginDto: LoginDto) {
-    const user = await this.userModel.findOne({ email: loginDto.email });
+    console.log({loginDto});
+    
+    const user = await this.userModel.findOne({ $or: [{ email: loginDto.email }, { user: loginDto.email }] });
     
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
