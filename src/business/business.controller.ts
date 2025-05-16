@@ -23,6 +23,14 @@ export class BusinessController {
     return this.businessService.findAll();
   }
 
+  @Get('my-businesses')
+  findMyBusinesses(@Headers('user') user: UserHeader) {
+    if (!user) {
+      throw new NotFoundException('User is required');
+    }
+    return this.businessService.findByUserId(user.uuid);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.businessService.findOne(id);

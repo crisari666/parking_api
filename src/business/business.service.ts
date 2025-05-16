@@ -37,4 +37,8 @@ export class BusinessService {
   async remove(id: string) {
     return this.businessModel.findByIdAndDelete(id).exec();
   }
+
+  async findByUserId(userId: string) {
+    return this.businessModel.find({ userId }).exec();
+  }
 }
