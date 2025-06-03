@@ -37,8 +37,8 @@ export class BusinessController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto) {
-    return this.businessService.update(id, updateBusinessDto);
+  update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto, @Headers('user') user: UserHeader) {
+    return this.businessService.update(id, updateBusinessDto, user.uuid);
   }
 
   @Delete(':id')

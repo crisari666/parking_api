@@ -3,4 +3,5 @@ export type UserHeader = {
   role: string;
   iat: number;
   exp: number;
+  business: string;
 }

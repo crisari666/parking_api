@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, HydratedDocument } from 'mongoose';
+import mongoose, { Document, HydratedDocument } from 'mongoose';
 
 export enum UserRole {
   admin = 'admin',
@@ -14,6 +14,9 @@ class UserModel extends Document {
 
   @Prop({index: true, default:""})
   user: string
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessModel', index: true })
+  business: string;
 
   @Prop({default: '', required: false})
   name: string

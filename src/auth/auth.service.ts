@@ -7,20 +7,22 @@ import { LoginDto } from './dto/login.dto';
 import * as fs from 'fs'
 import { join } from 'path';
 import * as jwt from 'jsonwebtoken';
+import { BusinessModel } from 'src/app/schemas/business.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(UserModel.name) private userModel: Model<UserModel>,
+    @InjectModel(BusinessModel.name) private businessModel: Model<BusinessModel>,
     private readonly passwordUtil: PasswordUtil,
   ) {}
 
 
-  async createJWT({userId, role}: {userId: string, role: string}): Promise<string> {
+  async createJWT({userId, role, business}: {userId: string, role: string, business: string}): Promise<string> {
     try {
       const privateKey = fs.readFileSync(join(process.cwd(), 'keys/qp_api.pem'), 'utf8');
       const token = jwt.sign(
-        {uuid: userId, role}, 
+        {uuid: userId, role, business}, 
         privateKey, 
         {
           algorithm: 'RS256',
@@ -38,6 +40,7 @@ export class AuthService {
     console.log({loginDto});
     
     const user = await this.userModel.findOne({ $or: [{ email: loginDto.email }, { user: loginDto.email }] });
+  
     
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -54,8 +57,9 @@ export class AuthService {
       email: user.email,
       role: user.role,
       name: user.name,
+      business: user.business,
       lastName: user.lastName,
-      token: await this.createJWT({userId: user._id.toString(), role: user.role})
+      token: await this.createJWT({userId: user._id.toString(), role: user.role, business: user.business.toString()})
     };
   }
 }

@@ -16,6 +16,9 @@ class BusinessModel extends Document {
   @Prop({required: true, type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', index: true})
   userId: string;
 
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserModel' }], default: [], index: true })
+  users: string[];
+
   @Prop({required: true})
   businessName: string;
 
