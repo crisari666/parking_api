@@ -37,6 +37,10 @@ export class VehicleService {
     return this.vehicleModel.find({ userId }).exec();
   }
 
+  async findActiveVehicles(businessId: string) {
+    return this.vehicleModel.find({ businessId, parking: true }).exec();
+  }
+
   async findByPlateNumber(plateNumber: string, businessId: string) {
     return this.vehicleModel.findOne({ plateNumber, businessId }).exec();
   }
@@ -47,5 +51,9 @@ export class VehicleService {
 
   async remove(id: string) {
     return this.vehicleModel.findByIdAndDelete(id).exec();
+  }
+
+  async removeAllByBusiness(businessId: string) {
+    return this.vehicleModel.deleteMany({ businessId }).exec();
   }
 }

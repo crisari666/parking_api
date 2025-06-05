@@ -20,6 +20,12 @@ export class VehicleLogController {
     return this.vehicleLogService.findAll(businessId);
   }
 
+  @Get('active')
+  getActiveVehicles(@Headers('user') user: UserHeader) {
+    const businessId = user.business;
+    return this.vehicleLogService.getActiveVehicles(businessId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @Headers('user') user: UserHeader) {
     const businessId = user.business;
@@ -49,5 +55,29 @@ export class VehicleLogController {
   ) {
     const businessId = user.business;
     return this.vehicleLogService.getLastVehicleLog(plateNumber.toUpperCase(), businessId);
+  }
+
+  @Patch('vehicle/:plateNumber/checkout')
+  checkout(
+    @Param('plateNumber') plateNumber: string,
+    @Body() updateVehicleLogDto: UpdateVehicleLogDto,
+    @Headers('user') user: UserHeader,
+  ) {
+    const businessId = user.business;
+    return this.vehicleLogService.checkout(plateNumber.toUpperCase(), updateVehicleLogDto, businessId);
+  }
+
+  @Get('vehicle/:plateNumber/logs')
+  getVehicleLogs(
+    @Param('plateNumber') plateNumber: string,
+    @Headers('user') user: UserHeader,
+  ) {
+    const businessId = user.business;
+    return this.vehicleLogService.getVehicleLogs(plateNumber.toUpperCase(), businessId);
+  }
+
+  @Delete('all/business/:businessId')
+  removeAll(@Param('businessId') businessId: string) {
+    return this.vehicleLogService.removeAllByBusinessId(businessId);
   }
 }

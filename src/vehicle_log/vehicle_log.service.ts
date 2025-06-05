@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
@@ -15,13 +15,19 @@ export class VehicleLogService {
 
   async create(createVehicleLogDto: CreateVehicleLogDto, businessId: string) {
     // Find the vehicle by plate number and business ID
-    const vehicle = await this.vehicleModel.findOne({
+    let vehicle = await this.vehicleModel.findOne({
       plateNumber: createVehicleLogDto.plateNumber,
       businessId,
     });
 
+
+
     if (!vehicle) {
-      throw new NotFoundException('Vehicle not found');
+      vehicle = await this.vehicleModel.create({
+        plateNumber: createVehicleLogDto.plateNumber.toUpperCase(),
+        vehicleType: createVehicleLogDto.vehicleType,
+        businessId,
+      });
     }
 
     // Create the vehicle log
@@ -33,6 +39,7 @@ export class VehicleLogService {
 
     // Update vehicle's last log time
     vehicle.lastLog = new Date();
+    vehicle.inParking = true;
     await vehicle.save();
 
     return vehicleLog.save();
@@ -41,7 +48,7 @@ export class VehicleLogService {
   async findAll(businessId: string) {
     return this.vehicleLogModel
       .find({ businessId })
-      .populate('vehicleId')
+      .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .exec();
   }
 
@@ -87,7 +94,7 @@ export class VehicleLogService {
     return vehicleLog;
   }
 
-  async   getLastVehicleLog(plateNumber: string, businessId: string) {
+  async getLastVehicleLog(plateNumber: string, businessId: string) {
     const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
@@ -112,5 +119,60 @@ export class VehicleLogService {
     }
 
     return vehicleLog;
+  }
+
+  async checkout(plateNumber: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
+    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
+
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle not found');
+    }
+    
+    const vehicleLog = await this.vehicleLogModel
+    .findOne({ vehicleId: vehicle._id, businessId, exitTime: null })
+    .sort({ entryTime: -1 })
+    .exec();
+    
+    if (!vehicleLog) {
+      throw new NotFoundException('No active vehicle log found');
+    }
+
+    const exitTime = new Date();
+
+    // Calculate duration in minutes
+    const durationInMinutes = Math.floor(
+      (exitTime.getTime() - vehicleLog.entryTime.getTime()) / (1000 * 60)
+    );
+
+    // Update the vehicle log with exit time, duration and cost
+    vehicleLog.exitTime = exitTime;
+    vehicle.inParking = false;
+    vehicleLog.duration = durationInMinutes;
+    vehicleLog.cost = updateVehicleLogDto.cost;
+    
+    return vehicleLog.save();
+  }
+
+  async getVehicleLogs(plateNumber: string, businessId: string) {
+    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle not found');
+    }
+    return this.vehicleLogModel
+      .find({ vehicleId: vehicle._id, businessId })
+      .sort({ entryTime: -1 })
+      .exec();
+  }
+
+  async getActiveVehicles(businessId: string) {
+    return this.vehicleLogModel
+      .find({ businessId, exitTime: null })
+      .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
+      .sort({ entryTime: -1 })
+      .exec();
+  }
+
+  async removeAllByBusinessId(businessId: string) {
+    return this.vehicleLogModel.deleteMany({ businessId }).exec();
   }
 }

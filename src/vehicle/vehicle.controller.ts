@@ -28,6 +28,12 @@ export class VehicleController {
     return this.vehicleService.findByUserId(userId);
   }
 
+  @Get('active')
+  findActiveVehicles(@Headers('user') user: UserHeader) {
+    const businessId = user.business;
+    return this.vehicleService.findActiveVehicles(businessId);
+  }
+
   @Get('plate/:plateNumber')
   findByPlateNumber(@Param('plateNumber') plateNumber: string, @Headers('user') user: UserHeader) {
     const businessId = user.business;
@@ -48,5 +54,10 @@ export class VehicleController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.vehicleService.remove(id);
+  }
+
+  @Delete('business/:businessId')
+  removeAllByBusiness(@Param('businessId') businessId: string) {
+    return this.vehicleService.removeAllByBusiness(businessId);
   }
 }
