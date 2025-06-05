@@ -6,6 +6,14 @@ export enum VehicleLogType {
   motorcycle = 'motorcycle',
 }
 
+export enum PaymentMethod {
+  cash = 0,
+  transfer = 1,
+  credit = 2,
+  debit = 3,
+  other = 4,
+}
+
 export type VehicleLogDocument = HydratedDocument<VehicleLogModel>;
 
 @Schema({timestamps: true})
@@ -27,6 +35,9 @@ class VehicleLogModel extends Document {
 
   @Prop({type: Number, default: 0})
   cost: number;
+  
+  @Prop({type: Number, default: null})
+  paymentMethod: PaymentMethod;
 }
 
 export const VehicleLogSchema = SchemaFactory.createForClass(VehicleLogModel);
