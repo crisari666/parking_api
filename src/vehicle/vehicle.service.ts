@@ -12,14 +12,12 @@ export class VehicleService {
   ) {}
 
   async create(createVehicleDto: CreateVehicleDto, businessId: string) {
-
-    await this.vehicleModel.deleteMany();
-
-    const existingVehicle = await this.vehicleModel.findOne({ plateNumber: createVehicleDto.plateNumber , businessId});
+    const existingVehicle = await this.vehicleModel.findOne({ plateNumber: createVehicleDto.plateNumber.toUpperCase(), businessId});
     if(existingVehicle) return existingVehicle;
 
     const vehicle = new this.vehicleModel({
       ...createVehicleDto,
+      plateNumber: createVehicleDto.plateNumber.toUpperCase(),
       businessId,
     });
     return vehicle.save();

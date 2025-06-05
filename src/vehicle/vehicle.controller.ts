@@ -37,7 +37,7 @@ export class VehicleController {
   @Get('plate/:plateNumber')
   findByPlateNumber(@Param('plateNumber') plateNumber: string, @Headers('user') user: UserHeader) {
     const businessId = user.business;
-    return this.vehicleService.findByPlateNumber(plateNumber, businessId);
+    return this.vehicleService.findByPlateNumber(plateNumber.toUpperCase(), businessId);
   }
 
   @Get(':id')

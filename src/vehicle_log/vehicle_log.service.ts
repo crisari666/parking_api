@@ -1,4 +1,4 @@
-import {Injectable, NotFoundException } from '@nestjs/common';
+import {BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
@@ -15,13 +15,16 @@ export class VehicleLogService {
 
   async create(createVehicleLogDto: CreateVehicleLogDto, businessId: string) {
     // Find the vehicle by plate number and business ID
+    console.log({createVehicleLogDto, businessId});
+    
     let vehicle = await this.vehicleModel.findOne({
-      plateNumber: createVehicleLogDto.plateNumber,
+      plateNumber: createVehicleLogDto.plateNumber.toUpperCase(),
       businessId,
     });
 
 
-
+    console.log({vehicle});
+    
     if (!vehicle) {
       vehicle = await this.vehicleModel.create({
         plateNumber: createVehicleLogDto.plateNumber.toUpperCase(),
@@ -29,6 +32,8 @@ export class VehicleLogService {
         businessId,
       });
     }
+
+    if(vehicle.inParking) throw new BadRequestException('Vehicle is already in parking');
 
     // Create the vehicle log
     const vehicleLog = new this.vehicleLogModel({
