@@ -54,4 +54,16 @@ export class VehicleService {
   async removeAllByBusiness(businessId: string) {
     return this.vehicleModel.deleteMany({ businessId }).exec();
   }
+
+  async setParkingStatus(plateNumber: string, businessId: string, parking: boolean) {
+    console.log(plateNumber, businessId, parking);
+    
+    const update = await this.vehicleModel.findOneAndUpdate({ plateNumber, businessId },{ inParking: parking },
+      { new: true }
+    )
+
+    console.log(update);
+
+    return update;
+  }
 }

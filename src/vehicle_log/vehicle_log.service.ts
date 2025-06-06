@@ -149,6 +149,8 @@ export class VehicleLogService {
       (exitTime.getTime() - vehicleLog.entryTime.getTime()) / (1000 * 60)
     );
 
+    await this.vehicleModel.updateOne({ _id: vehicle._id }, { $set: { inParking: false } });
+
     // Update the vehicle log with exit time, duration and cost
     vehicleLog.exitTime = exitTime;
     vehicle.inParking = false;

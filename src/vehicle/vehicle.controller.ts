@@ -40,6 +40,12 @@ export class VehicleController {
     return this.vehicleService.findByPlateNumber(plateNumber.toUpperCase(), businessId);
   }
 
+  @Patch('plate/:plateNumber/parking')
+  setParkingStatus(@Param('plateNumber') plateNumber: string, @Body('parking') parking: boolean, @Headers('user') user: UserHeader) {
+    const businessId = user.business;
+    return this.vehicleService.setParkingStatus(plateNumber.toUpperCase(), businessId, parking);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @Headers('user') user: UserHeader) {
     const businessId = user.business;
@@ -60,4 +66,6 @@ export class VehicleController {
   removeAllByBusiness(@Param('businessId') businessId: string) {
     return this.vehicleService.removeAllByBusiness(businessId);
   }
+
+
 }

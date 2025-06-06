@@ -33,11 +33,7 @@ export class VehicleLogController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateVehicleLogDto: UpdateVehicleLogDto,
-    @Headers('user') user: UserHeader,
-  ) {
+  update(@Param('id') id: string, @Body() updateVehicleLogDto: UpdateVehicleLogDto, @Headers('user') user: UserHeader) {
     const businessId = user.business;
     return this.vehicleLogService.update(id, updateVehicleLogDto, businessId);
   }
