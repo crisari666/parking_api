@@ -192,13 +192,14 @@ export class VehicleLogService {
     const startDate = today.toDate();
     const endDate = today.endOf('day').toDate();
 
-    console.log({date, startDate, endDate, businessId});
+    // console.log({date, startDate, endDate, businessId});
     
-
+    // console.log({startDate, endDate});
+    
     return this.vehicleLogModel
       .find({
         businessId,
-        entryTime: {
+        exitTime: {
           $gte: startDate,
           $lte: endDate
         }
