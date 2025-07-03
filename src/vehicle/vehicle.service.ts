@@ -36,7 +36,7 @@ export class VehicleService {
   }
 
   async findActiveVehicles(businessId: string) {
-    return this.vehicleModel.find({ businessId, parking: true }).exec();
+    return await this.vehicleModel.find({ businessId, inParking: true });
   }
 
   async findByPlateNumber(plateNumber: string, businessId: string) {

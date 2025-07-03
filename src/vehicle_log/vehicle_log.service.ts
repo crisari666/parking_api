@@ -1,6 +1,6 @@
 import {BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
 import { UpdateVehicleLogDto } from './dto/update-vehicle_log.dto';
 import { VehicleLogModel } from 'src/app/schemas/vehicle_log.schema';
@@ -101,7 +101,7 @@ export class VehicleLogService {
   }
 
   async getLastVehicleLog(plateNumber: string, businessId: string) {
-    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
+    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId: new mongoose.Types.ObjectId(businessId) });    
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
     }
@@ -129,6 +129,9 @@ export class VehicleLogService {
 
   async checkout(plateNumber: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
     const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
+
+    console.log({vehicle});
+    
 
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');

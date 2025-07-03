@@ -50,6 +50,8 @@ export class VehicleLogController {
     @Headers('user') user: UserHeader,
   ) {
     const businessId = user.business;
+    console.log({plateNumber, businessId});
+    
     return this.vehicleLogService.getLastVehicleLog(plateNumber.toUpperCase(), businessId);
   }
 
