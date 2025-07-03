@@ -5,6 +5,7 @@ import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
 import { UpdateVehicleLogDto } from './dto/update-vehicle_log.dto';
 import { VehicleLogModel } from 'src/app/schemas/vehicle_log.schema';
 import { VehicleModel } from 'src/app/schemas/vehicle.schema';
+import * as moment from 'moment';
 
 @Injectable()
 export class VehicleLogService {
@@ -181,5 +182,26 @@ export class VehicleLogService {
 
   async removeAllByBusinessId(businessId: string) {
     return this.vehicleLogModel.deleteMany({ businessId }).exec();
+  }
+
+  async getLogsByDate(date: string, businessId: string) {
+    const today = moment(date).startOf('day');
+    const startDate = today.toDate();
+    const endDate = today.endOf('day').toDate();
+
+    console.log({date, startDate, endDate, businessId});
+    
+
+    return this.vehicleLogModel
+      .find({
+        businessId,
+        entryTime: {
+          $gte: startDate,
+          $lte: endDate
+        }
+      })
+      .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
+      .sort({ entryTime: -1 })
+      .exec();
   }
 }

@@ -12,6 +12,7 @@ import { TokenValidationService } from './app/middlewares/token-validation.servi
 import { BusinessModule } from './business/business.module';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { VehicleLogModule } from './vehicle_log/vehicle_log.module';
+import { AccountingModule } from './accounting/accounting.module';
 @Module({
   imports: [
     ConfigModuleNest.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -22,6 +23,7 @@ import { VehicleLogModule } from './vehicle_log/vehicle_log.module';
     BusinessModule,
     VehicleModule,
     VehicleLogModule,
+    AccountingModule,
 
   ],
   controllers: [AppController],

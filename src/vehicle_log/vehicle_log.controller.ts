@@ -76,4 +76,13 @@ export class VehicleLogController {
   removeAll(@Param('businessId') businessId: string) {
     return this.vehicleLogService.removeAllByBusinessId(businessId);
   }
+
+  @Get('date/:date')
+  getLogsByDate(
+    @Param('date') date: string,
+    @Headers('user') user: UserHeader,
+  ) {
+    const businessId = user.business;
+    return this.vehicleLogService.getLogsByDate(date, businessId);
+  }
 }
