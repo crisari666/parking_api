@@ -9,7 +9,7 @@ export class AuthTokenMiddleware implements NestMiddleware {
     try { 
       const baseUrl = req.baseUrl             
       console.log({baseUrl});
-      if(baseUrl.includes('/.well-known/jwks.json') || baseUrl.includes('/auth/login') || baseUrl.includes('credit-request') || baseUrl.includes('getCollectionsInfo')) return next();
+      if(baseUrl.includes('/.well-known/jwks.json') || baseUrl.includes('/auth/login') || baseUrl.includes('credit-request') || baseUrl.includes('getCollectionsInfo') || (baseUrl as string) == '/config') return next();
       
       const token = req.headers.authorization?.split(' ')[1];
       
