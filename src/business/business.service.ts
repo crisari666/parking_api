@@ -18,6 +18,13 @@ export class BusinessService {
       ...createBusinessDto,
       userId,
     });
+
+    const user = await this.userModel.findById(userId);
+    if(!user) throw new NotFoundException('User not found');
+
+    user.business = createdBusiness._id.toString();
+    await user.save();
+
     return createdBusiness.save();
   }
 
