@@ -194,7 +194,7 @@ export class VehicleLogService {
 
     // console.log({date, startDate, endDate, businessId});
     
-    // console.log({startDate, endDate});
+    console.log({startDate, endDate});
     
     return this.vehicleLogModel
       .find({
