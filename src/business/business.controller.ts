@@ -24,7 +24,7 @@ export class BusinessController {
       throw new NotFoundException('User is required');
     }
     const business = await this.businessService.findByUserId(user.uuid);
-    return [business];
+    return business;
   }
   
   @Get('all')
