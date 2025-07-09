@@ -188,9 +188,9 @@ export class VehicleLogService {
   }
 
   async getLogsByDate(date: string, businessId: string) {
-    const today = moment(date).startOf('day');
-    const startDate = today.toDate();
-    const endDate = today.endOf('day').toDate();
+    const today = moment(date).utc().startOf('day');
+    const startDate = today.add(5, 'hours').toDate();
+    const endDate = today.endOf('day').add(5, 'hours').toDate();
 
     // console.log({date, startDate, endDate, businessId});
     
