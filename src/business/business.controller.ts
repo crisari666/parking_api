@@ -19,7 +19,16 @@ export class BusinessController {
   }
 
   @Get()
-  findAll() {
+  async userBusiness(@Headers('user') user: UserHeader) {
+    if (!user) {
+      throw new NotFoundException('User is required');
+    }
+    const business = await this.businessService.findByUserId(user.uuid);
+    return [business];
+  }
+  
+  @Get('all')
+  getAllBusinesses() {
     return this.businessService.findAll();
   }
 
