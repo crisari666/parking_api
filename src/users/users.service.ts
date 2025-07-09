@@ -13,9 +13,12 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+  console.log({createUserDto});
+  
     const hashedPassword = this.passwordUtil.hashString(createUserDto.password);
     const newUser = new this.userModel({
       ...createUserDto,
+      email: createUserDto.user.toLowerCase(),
       password: hashedPassword,
     });
     return newUser.save();

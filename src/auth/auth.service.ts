@@ -37,10 +37,11 @@ export class AuthService {
   }
 
   async validateUser(loginDto: LoginDto) {
-    console.log({loginDto});
+    // console.log({loginDto});
     
-    const user = await this.userModel.findOne({ $or: [{ email: loginDto.email }, { user: loginDto.email }] });
+    const user = await this.userModel.findOne({ $or: [{ email: loginDto.user }, { user: loginDto.user }] });
   
+    // console.log({user});
     
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -59,7 +60,10 @@ export class AuthService {
       name: user.name,
       business: user.business,
       lastName: user.lastName,
-      token: await this.createJWT({userId: user._id.toString(), role: user.role, business: user.business.toString()})
+      token: await this.createJWT({
+        userId: user._id.toString(), 
+        role: user.role, 
+        business: user.business?.toString() ?? ""})
     };
   }
 }
