@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { LoggingInterceptor } from './app/middlewares/loggin-middleware';
 
 async function bootstrap() {
   const databaseName = process.env.DB_NAME;
@@ -10,6 +11,8 @@ async function bootstrap() {
   const PORT_APP = process.env.PORT_APP
   console.log({dataBasePass, databaseName, dataBaseUser, HOST, PORT_DB, PORT_APP});
   const app = await NestFactory.create(AppModule);
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
   await app.listen(PORT_APP);
 }
 bootstrap();

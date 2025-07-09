@@ -56,4 +56,26 @@ export class BusinessService {
   async findByUserId(userId: string) {
     return this.businessModel.find({ userId }).exec();
   }
+
+  async setUserToBusiness(businessId: string, userId: string) {
+    const business = await this.businessModel.findById(businessId);
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Update the business to include the user
+    business.userId = userId;
+    await business.save();
+
+    // Update the user to include the business
+    user.business = businessId;
+    await user.save();
+
+    return business;
+  }
 }

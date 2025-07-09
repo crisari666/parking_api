@@ -45,4 +45,12 @@ export class BusinessController {
   remove(@Param('id') id: string) {
     return this.businessService.remove(id);
   }
+
+  @Patch(':id/set-user')
+  setUserToBusiness(@Param('id') id: string, @Headers('user') user: UserHeader) {
+    if (!user) {
+      throw new NotFoundException('User is required');
+    }
+    return this.businessService.setUserToBusiness(id, user.uuid);
+  }
 }

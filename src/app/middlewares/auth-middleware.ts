@@ -6,6 +6,9 @@ export class AuthTokenMiddleware implements NestMiddleware {
   constructor(private readonly tokenValidationService: TokenValidationService) {}
   
   async use(req: any, res, next: () => void) {
+
+
+    
     try { 
       const baseUrl = req.baseUrl             
       // console.log({baseUrl});
