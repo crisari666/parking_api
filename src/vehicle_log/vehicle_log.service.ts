@@ -145,6 +145,8 @@ export class VehicleLogService {
     .exec();
     
     if (!vehicleLog) {
+      vehicle.inParking = false;
+      await vehicle.save();
       throw new NotFoundException('No active vehicle log found');
     }
 
