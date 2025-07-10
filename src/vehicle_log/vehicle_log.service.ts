@@ -43,14 +43,14 @@ export class VehicleLogService {
     vehicle.inParking = true;
     
     await vehicle.save();
-    const vehicleLog = this.vehicleLogModel.create({
+    const vehicleLog = await this.vehicleLogModel.create({
       vehicleId: vehicle._id,
       entryTime: new Date(),
       businessId,
     });
 
 
-    return {...vehicleLog, vehicleType: vehicle.vehicleType};
+    return {...vehicleLog.toObject(), vehicleType: vehicle.vehicleType};
   }
 
   async findAll(businessId: string) {
