@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserModel } from 'src/app/schemas/user.schema';
 import { PasswordUtil } from 'src/app/utils/passord.util';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import * as fs from 'fs'
 import { join } from 'path';
 import * as jwt from 'jsonwebtoken';
@@ -16,6 +17,7 @@ export class AuthService {
     @InjectModel(BusinessModel.name) private businessModel: Model<BusinessModel>,
     private readonly passwordUtil: PasswordUtil,
   ) {}
+
 
 
   async createJWT({userId, role, business}: {userId: string, role: string, business: string}): Promise<string> {
@@ -64,6 +66,48 @@ export class AuthService {
         userId: user._id.toString(), 
         role: user.role, 
         business: user.business?.toString() ?? ""})
+    };
+  }
+
+  async registerUser(registerDto: RegisterDto) {
+    // Check if user already exists
+    const existingUser = await this.userModel.findOne({ 
+      $or: [{ email: registerDto.user }, { user: registerDto.user }] 
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User already exists with this email');
+    }
+
+    // Hash the password
+    const hashedPassword = this.passwordUtil.hashString(registerDto.password);
+
+    // Create new user
+    const newUser = new this.userModel({
+      email: registerDto.user,
+      user: registerDto.user, // Set user field to same as email
+      password: hashedPassword,
+      role: 'user', // Default role
+      name: '',
+      lastName: '',
+      business: null
+    });
+
+    const savedUser = await newUser.save();
+
+    // Return same response format as login
+    return {
+      id: savedUser._id,
+      email: savedUser.email,
+      role: savedUser.role,
+      name: savedUser.name,
+      business: savedUser.business,
+      lastName: savedUser.lastName,
+      token: await this.createJWT({
+        userId: savedUser._id.toString(), 
+        role: savedUser.role, 
+        business: savedUser.business?.toString() ?? ""
+      })
     };
   }
 }

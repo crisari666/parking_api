@@ -23,6 +23,8 @@ export class VehicleLogController {
   @Get('active')
   getActiveVehicles(@Headers('user') user: UserHeader) {
     const businessId = user.business;
+    console.log({businessId});
+    
     return this.vehicleLogService.getActiveVehicles(businessId);
   }
 

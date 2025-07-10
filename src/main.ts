@@ -3,15 +3,16 @@ import { AppModule } from './app.module';
 import { LoggingInterceptor } from './app/middlewares/loggin-middleware';
 
 async function bootstrap() {
-  const databaseName = process.env.DB_NAME;
-  const dataBasePass = process.env.DB_PASS
-  const dataBaseUser = process.env.DB_USER
-  const HOST = process.env.HOST
-  const PORT_DB = process.env.PORT_DB
+  // const databaseName = process.env.DB_NAME;
+  // const dataBasePass = process.env.DB_PASS
+  // const dataBaseUser = process.env.DB_USER
+  // const HOST = process.env.HOST
+  // const PORT_DB = process.env.PORT_DB
   const PORT_APP = process.env.PORT_APP
-  console.log({dataBasePass, databaseName, dataBaseUser, HOST, PORT_DB, PORT_APP});
+  const isDev = process.env.IS_DEV === 'true'
+  //console.log({dataBasePass, databaseName, dataBaseUser, HOST, PORT_DB, PORT_APP});
   const app = await NestFactory.create(AppModule);
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  if(isDev) app.useGlobalInterceptors(new LoggingInterceptor());
 
   await app.listen(PORT_APP);
 }
