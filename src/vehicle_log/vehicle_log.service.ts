@@ -37,20 +37,20 @@ export class VehicleLogService {
     if(vehicle.inParking) throw new BadRequestException('Vehicle is already in parking');
 
     // Create the vehicle log
-    const vehicleLog = new this.vehicleLogModel({
+    
+    // Update vehicle's last log time
+    vehicle.lastLog = new Date();
+    vehicle.inParking = true;
+    
+    await vehicle.save();
+    const vehicleLog = this.vehicleLogModel.create({
       vehicleId: vehicle._id,
       entryTime: new Date(),
       businessId,
     });
 
-    // Update vehicle's last log time
-    vehicle.lastLog = new Date();
-    vehicle.inParking = true;
-    await vehicle.save();
 
-    const savedVehicleLog = await vehicleLog.save();
-
-    return {...savedVehicleLog.toObject(), vehicleType: vehicle.vehicleType};
+    return {...vehicleLog, vehicleType: vehicle.vehicleType};
   }
 
   async findAll(businessId: string) {
