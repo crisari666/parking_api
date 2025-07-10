@@ -124,7 +124,7 @@ export class VehicleLogService {
       await vehicleLog.save();
     }
 
-    return vehicleLog;
+    return {...vehicleLog.toObject(), vehicleType: vehicle.vehicleType};
   }
 
   async checkout(plateNumber: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
