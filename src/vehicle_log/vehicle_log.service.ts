@@ -48,7 +48,9 @@ export class VehicleLogService {
     vehicle.inParking = true;
     await vehicle.save();
 
-    return {...vehicleLog.toObject(), vehicleType: vehicle.vehicleType};
+    const savedVehicleLog = await vehicleLog.save();
+
+    return {...savedVehicleLog.toObject(), vehicleType: vehicle.vehicleType};
   }
 
   async findAll(businessId: string) {
@@ -160,8 +162,10 @@ export class VehicleLogService {
     vehicle.inParking = false;
     vehicleLog.duration = durationInMinutes;
     vehicleLog.cost = updateVehicleLogDto.cost;
+
+    const savedVehicleLog = await vehicleLog.save();
     
-    return {...vehicleLog.toObject(), vehicleType: vehicle.vehicleType};
+    return {...savedVehicleLog.toObject(), vehicleType: vehicle.vehicleType};
   }
 
   async getVehicleLogs(plateNumber: string, businessId: string) {
