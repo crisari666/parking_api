@@ -21,7 +21,7 @@ export class UsersController {
 
   @Post('create-by-user')
   async createByUser(@Body() createUserByUserDto: CreateUserByUserDto, @Headers('user') user: UserHeader) {
-    if (!user || user.role !== UserRole.user) {
+    if (!user || user.role === UserRole.worker) {
       throw new ForbiddenException('Only users with user role can create users via this endpoint');
     }
     return this.usersService.createByUser(createUserByUserDto, user);
