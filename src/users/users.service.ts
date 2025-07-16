@@ -4,6 +4,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserModel } from 'src/app/schemas/user.schema';
 import { Model } from 'mongoose';
 import { PasswordUtil } from 'src/app/utils/passord.util';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserByUserDto } from './dto/create-user.dto';
+import { UserHeader } from 'src/app/types/user-header.type';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +29,25 @@ export class UsersService {
 
   async findAll() {
     return this.userModel.find().select('-password').exec();
+  }
+
+  async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password');
+    return updatedUser;
+  }
+
+  async createByUser(createUserByUserDto: CreateUserByUserDto, creator: UserHeader) {
+    const hashedPassword = this.passwordUtil.hashString(createUserByUserDto.password);
+    const newUser = new this.userModel({
+      user: createUserByUserDto.email,
+      email: createUserByUserDto.email,
+      password: hashedPassword,
+      business: creator.business,
+      role: 'user',
+      name: '',
+      lastName: ''
+    });
+    return (await newUser.save()).toObject({ versionKey: false, transform: (doc, ret) => { delete ret.password; return ret; } });
   }
 
   findOne(id: number) {
