@@ -51,6 +51,18 @@ class BusinessModel extends Document {
 
   @Prop({required: true, type: Number})
   studentMotorcycleHourCost: number;
+
+  @Prop({ required: true })
+  businessNit: string;
+
+  @Prop({ required: true })
+  businessResolution: string;
+
+  @Prop({ required: true })
+  address: string;
+
+  @Prop({ required: true })
+  schedule: string;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(BusinessModel);

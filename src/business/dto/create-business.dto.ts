@@ -48,4 +48,21 @@ export class CreateBusinessDto {
   @IsNumber()
   @IsNotEmpty()
   studentMotorcycleHourCost: number;
+
+  
+  @IsString()
+  @IsNotEmpty()
+  readonly businessNit: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly businessResolution: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly schedule: string;
 }

@@ -17,6 +17,10 @@ export class BusinessService {
     const createdBusiness = new this.businessModel({
       ...createBusinessDto,
       userId,
+      businessNit: createBusinessDto.businessNit,
+      businessResolution: createBusinessDto.businessResolution,
+      address: createBusinessDto.address,
+      schedule: createBusinessDto.schedule,
     });
 
     const user = await this.userModel.findById(userId);
@@ -45,7 +49,18 @@ export class BusinessService {
     await user.save();
 
     return this.businessModel
-      .findByIdAndUpdate(id, { ...updateBusinessDto, userId: user._id }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...updateBusinessDto,
+          userId: user._id,
+          businessNit: updateBusinessDto.businessNit,
+          businessResolution: updateBusinessDto.businessResolution,
+          address: updateBusinessDto.address,
+          schedule: updateBusinessDto.schedule,
+        },
+        { new: true }
+      )
       .exec();
   }
 
