@@ -32,17 +32,26 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('business/:businessId')
+  async findUsersByBusiness(@Param('businessId') businessId: string) {
+    return this.usersService.findUsersByBusiness(businessId);
+  }
+
+  @Get('my-business')
+  async findUsersByMyBusiness(@Headers('user') user: UserHeader) {
+    if (!user || !user.business) {
+      throw new ForbiddenException('User must be associated with a business');
+    }
+    return this.usersService.findUsersByBusiness(user.business);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
   @Patch(':id')
-  async updateUser(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Headers('user') user: UserHeader
-  ) {
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Headers('user') user: UserHeader) {
     if (!user || user.role !== UserRole.admin) {
       throw new ForbiddenException('Only admin users can update user roles');
     }
@@ -50,10 +59,7 @@ export class UsersController {
   }
 
   @Patch(':id/role')
-  async updateUserRole(
-    @Param('id') id: string,
-    @Body() updateUserRoleDto: UpdateUserRoleDto,
-    @Headers('user') user: UserHeader
+  async updateUserRole( @Param('id') id: string, @Body() updateUserRoleDto: UpdateUserRoleDto, @Headers('user') user: UserHeader
   ) {
     if (!user || user.role !== UserRole.admin) {
       throw new ForbiddenException('Only admin users can update user roles');

@@ -48,7 +48,7 @@ export class BusinessService {
     user.business = id;
     await user.save();
 
-    return this.businessModel
+    return await this.businessModel
       .findByIdAndUpdate(
         id,
         {
@@ -61,7 +61,6 @@ export class BusinessService {
         },
         { new: true }
       )
-      .exec();
   }
 
   async remove(id: string) {

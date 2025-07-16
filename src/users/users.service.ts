@@ -31,6 +31,10 @@ export class UsersService {
     return this.userModel.find().select('-password').exec();
   }
 
+  async findUsersByBusiness(businessId: string) {
+    return this.userModel.find({ business: businessId }).select('-password').exec();
+  }
+
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password');
     return updatedUser;
@@ -43,7 +47,7 @@ export class UsersService {
       email: createUserByUserDto.email,
       password: hashedPassword,
       business: creator.business,
-      role: 'user',
+      role: 'worker',
       name: '',
       lastName: ''
     });

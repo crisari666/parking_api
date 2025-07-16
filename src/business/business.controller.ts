@@ -47,6 +47,8 @@ export class BusinessController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto, @Headers('user') user: UserHeader) {
+    console.log({user, updateBusinessDto});
+    
     return this.businessService.update(id, updateBusinessDto, user.uuid);
   }
 
