@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Headers, ForbiddenException, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
 import { UpdateUserRoleDto } from './dto/update-user.dto';
 import { CreateUserByUserDto } from './dto/create-user.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
@@ -65,5 +65,13 @@ export class UsersController {
       throw new ForbiddenException('Only admin users can update user roles');
     }
     return this.usersService.updateUser(id, updateUserRoleDto);
+  }
+
+  @Patch(':id/status')
+  async updateUserStatus(@Param('id') id: string, @Body() updateUserStatusDto: UpdateUserStatusDto, @Headers('user') user: UserHeader) {
+    if (!user || (user.role !== UserRole.admin && user.role !== UserRole.user)) {
+      throw new ForbiddenException('Only admin or user role can update user status');
+    }
+    return this.usersService.updateUserStatus(id, updateUserStatusDto);
   }
 }

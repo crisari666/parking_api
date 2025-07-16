@@ -32,6 +32,9 @@ class UserModel extends Document {
 
   @Prop({ required: true })
   password: string
+
+  @Prop({default: true, required: false})
+  enabled: boolean
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserModel);

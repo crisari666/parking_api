@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UserModel } from 'src/app/schemas/user.schema';
 import { Model } from 'mongoose';
 import { PasswordUtil } from 'src/app/utils/passord.util';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
 import { CreateUserByUserDto } from './dto/create-user.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
 
@@ -37,6 +37,15 @@ export class UsersService {
 
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password');
+    return updatedUser;
+  }
+
+  async updateUserStatus(id: string, updateUserStatusDto: UpdateUserStatusDto) {
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id, 
+      { enabled: updateUserStatusDto.enabled }, 
+      { new: true }
+    ).select('-password');
     return updatedUser;
   }
 
