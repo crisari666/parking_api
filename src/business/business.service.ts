@@ -67,8 +67,13 @@ export class BusinessService {
     return this.businessModel.findByIdAndDelete(id).exec();
   }
 
-  async findByUserId(userId: string) {
-    return this.businessModel.find({ userId }).exec();
+  async findByUserId(userId: string, level?: string, businessId?: string) {
+    if(level === 'worker' && businessId) {
+      return this.businessModel.find({ _id: businessId }).exec();
+    } else {
+      return this.businessModel.find({ userId }).exec();
+    }
+
   }
 
   async setUserToBusiness(businessId: string, userId: string) {

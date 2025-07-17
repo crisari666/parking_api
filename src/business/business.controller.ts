@@ -23,7 +23,7 @@ export class BusinessController {
     if (!user) {
       throw new NotFoundException('User is required');
     }
-    const business = await this.businessService.findByUserId(user.uuid);
+    const business = await this.businessService.findByUserId(user.uuid, user.role, user.business);
     return business;
   }
   
