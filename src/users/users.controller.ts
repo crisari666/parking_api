@@ -1,8 +1,7 @@
 import { Controller, Get, Post, Body, Param, Headers, ForbiddenException, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
-import { UpdateUserRoleDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserStatusDto, UpdateUserRoleDto, UpdateUserByUserDto } from './dto/update-user.dto';
 import { CreateUserByUserDto } from './dto/create-user.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
 import { UserRole } from 'src/app/schemas/user.schema';
@@ -74,4 +73,17 @@ export class UsersController {
     }
     return this.usersService.updateUserStatus(id, updateUserStatusDto);
   }
+
+  @Patch(':id/update-by-user')
+  async updateUserByUser(
+    @Param('id') id: string, 
+    @Body() updateUserByUserDto: UpdateUserByUserDto, 
+    @Headers('user') user: UserHeader
+  ) {
+    if (!user || user.role === UserRole.worker) {
+      throw new ForbiddenException('Only users with user role can update users via this endpoint');
+    }
+    return this.usersService.updateUserByUser(id, updateUserByUserDto, user);
+  }
+
 }

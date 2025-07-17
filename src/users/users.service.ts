@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserModel } from 'src/app/schemas/user.schema';
 import { Model } from 'mongoose';
 import { PasswordUtil } from 'src/app/utils/passord.util';
-import { UpdateUserDto, UpdateUserStatusDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserStatusDto, UpdateUserByUserDto } from './dto/update-user.dto';
 import { CreateUserByUserDto } from './dto/create-user.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
 
@@ -61,6 +61,40 @@ export class UsersService {
       lastName: ''
     });
     return (await newUser.save()).toObject({ versionKey: false, transform: (doc, ret) => { delete ret.password; return ret; } });
+  }
+
+  async updateUserByUser(id: string, updateUserByUserDto: UpdateUserByUserDto, updater: UserHeader) {
+    const userToUpdate = await this.userModel.findById(id);
+    if (!userToUpdate) {
+      throw new NotFoundException('User not found');
+    }
+    
+    if (userToUpdate.business.toString() !== updater.business) {
+      throw new ForbiddenException('User does not belong to the same business');
+    }
+    
+    if (userToUpdate.role !== 'worker') {
+      throw new ForbiddenException('Can only update worker users');
+    }
+    
+    const updateData: any = {};
+    
+    if (updateUserByUserDto.email) {
+      updateData.email = updateUserByUserDto.email.toLowerCase();
+      updateData.user = updateUserByUserDto.email.toLowerCase();
+    }
+    
+    if (updateUserByUserDto.password) {
+      updateData.password = this.passwordUtil.hashString(updateUserByUserDto.password);
+    }
+    
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id, 
+      updateData, 
+      { new: true }
+    ).select('-password');
+    
+    return updatedUser;
   }
 
   findOne(id: number) {
