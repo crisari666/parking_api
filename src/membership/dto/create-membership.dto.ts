@@ -1,5 +1,6 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsString, IsOptional, IsBoolean, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { VehicleType } from '../../app/schemas/vehicle.schema';
 
 /**
  * JSON Example:
@@ -9,7 +10,10 @@ import { Type } from 'class-transformer';
  *   "value": 299.99,
  *   "businessId": "business-123",
  *   "enable": true,
- *   "vehicleId": "vehicle-456"
+ *   "plateNumber": "ABC123",
+ *   "userName": "John Doe",
+ *   "phone": "+1234567890",
+ *   "vehicleType": "car"
  * }
  */
 export class CreateMembershipDto {
@@ -37,5 +41,17 @@ export class CreateMembershipDto {
 
   @IsNotEmpty()
   @IsString()
-  vehicleId: string;
+  plateNumber: string;
+
+  @IsNotEmpty()
+  @IsString()
+  userName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  phone: string;
+
+  @IsNotEmpty()
+  @IsEnum(VehicleType)
+  vehicleType: VehicleType;
 }

@@ -43,12 +43,12 @@ export class MembershipController {
     return this.membershipService.findMembershipsByVehiclePlate(plateNumber.toUpperCase(), businessId);
   }
 
-  @Get('vehicle/:vehicleId/business/:businessId')
+  @Get('vehicle/plate/:plateNumber/business/:businessId')
   findByVehicleAndBusiness(
-    @Param('vehicleId') vehicleId: string,
+    @Param('plateNumber') plateNumber: string,
     @Param('businessId') businessId: string,
   ) {
-    return this.membershipService.findByVehicleAndBusiness(vehicleId, businessId);
+    return this.membershipService.findByVehicleAndBusiness(plateNumber, businessId);
   }
 
   @Get(':id')

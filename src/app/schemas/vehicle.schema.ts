@@ -25,9 +25,13 @@ class VehicleModel extends Document {
   @Prop({required: true, index: true, type: mongoose.Schema.Types.ObjectId, ref: 'BusinessModel'})
   businessId: string;
 
-  
+  @Prop({required: true})
+  userName: string;
+
+  @Prop({required: true})
+  phone: string;
 }
 
 export const VehicleSchema = SchemaFactory.createForClass(VehicleModel);
 
-export { VehicleModel }
+export { VehicleModel };

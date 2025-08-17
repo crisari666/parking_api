@@ -5,7 +5,7 @@ import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { ToggleMembershipDto } from './dto/toggle-membership.dto';
 import { MembershipModel } from '../app/schemas/membership.schema';
-import { VehicleModel } from '../app/schemas/vehicle.schema';
+import { VehicleModel, VehicleType } from '../app/schemas/vehicle.schema';
 
 @Injectable()
 export class MembershipService {
@@ -14,10 +14,45 @@ export class MembershipService {
     private readonly membershipModel: Model<MembershipModel>,
     @InjectModel(VehicleModel.name)
     private readonly vehicleModel: Model<VehicleModel>,
-  ) {}
+  ) {} 
 
   async create(createMembershipDto: CreateMembershipDto): Promise<MembershipModel> {
-    const createdMembership = new this.membershipModel(createMembershipDto);
+    const { plateNumber, businessId, userName, phone, vehicleType, ...membershipData } = createMembershipDto;
+    
+    // Check if vehicle exists in the database
+    let vehicle = await this.vehicleModel.findOne({
+      plateNumber: plateNumber,
+      businessId: new mongoose.Types.ObjectId(businessId)
+    });
+
+    if (vehicle) {
+      // Update existing vehicle with new data
+      vehicle.userName = userName;
+      vehicle.phone = phone;
+      vehicle.vehicleType = vehicleType;
+      vehicle.lastLog = new Date();
+      await vehicle.save();
+    } else {
+      // Create new vehicle
+      vehicle = new this.vehicleModel({
+        plateNumber,
+        businessId: new mongoose.Types.ObjectId(businessId),
+        userName,
+        phone,
+        vehicleType,
+        inParking: false,
+        lastLog: new Date()
+      });
+      await vehicle.save();
+    }
+
+    // Create membership with the vehicle ID
+    const createdMembership = new this.membershipModel({
+      ...membershipData,
+      vehicleId: vehicle._id,
+      businessId: new mongoose.Types.ObjectId(businessId)
+    });
+    
     return createdMembership.save();
   }
 
@@ -33,9 +68,20 @@ export class MembershipService {
     return membership;
   }
 
-  async findByVehicleAndBusiness(vehicleId: string, businessId: string): Promise<MembershipModel[]> {
+  async findByVehicleAndBusiness(plateNumber: string, businessId: string): Promise<MembershipModel[]> {
+    // First, find the vehicle by plate number and business ID
+    const vehicle = await this.vehicleModel.findOne({
+      plateNumber: plateNumber,
+      businessId: new mongoose.Types.ObjectId(businessId)
+    });
+
+    if (!vehicle) {
+      return [];
+    }
+
+    // Find memberships by vehicle ID
     return this.membershipModel
-      .find({ vehicleId, businessId })
+      .find({ vehicleId: vehicle._id, businessId })
       .sort({ dateStart: -1 })
       .exec();
   }
@@ -75,12 +121,22 @@ export class MembershipService {
     }
   }
 
-  async findActiveMembership(vehicleId: string, businessId: string): Promise<MembershipModel | null> {
+  async findActiveMembership(plateNumber: string, businessId: string): Promise<MembershipModel | null> {
     const currentDate = new Date();
+    
+    // First, find the vehicle by plate number and business ID
+    const vehicle = await this.vehicleModel.findOne({
+      plateNumber: plateNumber,
+      businessId: new mongoose.Types.ObjectId(businessId)
+    });
+
+    if (!vehicle) {
+      return null;
+    }
     
     const activeMembership = await this.membershipModel
       .findOne({
-        vehicleId,
+        vehicleId: vehicle._id,
         businessId,
         enable: true,
         dateEnd: { $gte: currentDate }
