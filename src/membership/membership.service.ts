@@ -71,4 +71,19 @@ export class MembershipService {
       throw new NotFoundException(`Membership with ID ${id} not found`);
     }
   }
+
+  async findActiveMembership(vehicleId: string, businessId: string): Promise<MembershipModel | null> {
+    const currentDate = new Date();
+    
+    const activeMembership = await this.membershipModel
+      .findOne({
+        vehicleId,
+        businessId,
+        enable: true,
+        dateEnd: { $gte: currentDate }
+      })
+      .exec();
+    
+    return activeMembership;
+  }
 }

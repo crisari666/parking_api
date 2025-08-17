@@ -5,6 +5,7 @@ import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
 import { UpdateVehicleLogDto } from './dto/update-vehicle_log.dto';
 import { VehicleLogModel } from 'src/app/schemas/vehicle_log.schema';
 import { VehicleModel } from 'src/app/schemas/vehicle.schema';
+import { MembershipService } from '../membership/membership.service';
 import * as moment from 'moment';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class VehicleLogService {
   constructor(
     @InjectModel(VehicleLogModel.name) private vehicleLogModel: Model<VehicleLogModel>,
     @InjectModel(VehicleModel.name) private vehicleModel: Model<VehicleModel>,
+    private readonly membershipService: MembershipService,
   ) {}
 
   async create(createVehicleLogDto: CreateVehicleLogDto, businessId: string) {
@@ -22,9 +24,6 @@ export class VehicleLogService {
       plateNumber: createVehicleLogDto.plateNumber.toUpperCase(),
       businessId,
     });
-
-
-    console.log({vehicle});
     
     if (!vehicle) {
       vehicle = await this.vehicleModel.create({
@@ -36,9 +35,31 @@ export class VehicleLogService {
 
     if(vehicle.inParking) throw new BadRequestException('Vehicle is already in parking');
 
-    // Create the vehicle log
+    // Check if vehicle has active membership
+    const activeMembership = await this.membershipService.findActiveMembership(vehicle._id.toString(), businessId);
     
-    // Update vehicle's last log time
+    if (activeMembership) {
+      // Vehicle has active membership - no charge
+      vehicle.lastLog = new Date();
+      vehicle.inParking = true;
+      
+      await vehicle.save();
+      const vehicleLog = await this.vehicleLogModel.create({
+        vehicleId: vehicle._id,
+        entryTime: new Date(),
+        businessId,
+        hasMembership: true,
+        membershipId: activeMembership._id,
+      });
+
+      return {
+        ...vehicleLog.toObject(), 
+        vehicleType: vehicle.vehicleType,
+        message: 'Vehicle has active membership - no charge applied'
+      };
+    }
+
+    // No active membership - proceed with normal entry
     vehicle.lastLog = new Date();
     vehicle.inParking = true;
     
@@ -47,17 +68,24 @@ export class VehicleLogService {
       vehicleId: vehicle._id,
       entryTime: new Date(),
       businessId,
+      hasMembership: false,
     });
-
 
     return {...vehicleLog.toObject(), vehicleType: vehicle.vehicleType};
   }
 
   async findAll(businessId: string) {
-    return this.vehicleLogModel
+    const vehicleLogs = await this.vehicleLogModel
       .find({ businessId })
       .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .exec();
+    
+    return vehicleLogs.map(log => ({
+      ...log.toObject(),
+      message: log.hasMembership 
+        ? 'Vehicle has active membership - no charge applied'
+        : 'Vehicle charged based on parking duration'
+    }));
   }
 
   async findOne(id: string, businessId: string) {
@@ -126,14 +154,19 @@ export class VehicleLogService {
       await vehicleLog.save();
     }
 
-    return {...vehicleLog.toObject(), vehicleType: vehicle.vehicleType};
+    const responseMessage = vehicleLog.hasMembership 
+      ? 'Vehicle has active membership - no charge will be applied'
+      : 'Vehicle will be charged based on parking duration';
+
+    return {
+      ...vehicleLog.toObject(), 
+      vehicleType: vehicle.vehicleType,
+      message: responseMessage
+    };
   }
 
   async checkout(plateNumber: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
     const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
-
-    console.log({vehicle});
-    
 
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
@@ -163,11 +196,27 @@ export class VehicleLogService {
     vehicleLog.exitTime = exitTime;
     vehicle.inParking = false;
     vehicleLog.duration = durationInMinutes;
-    vehicleLog.cost = updateVehicleLogDto.cost;
+    
+    // Check if vehicle has active membership to avoid charging
+    if (vehicleLog.hasMembership) {
+      // Vehicle has membership - no cost
+      vehicleLog.cost = 0;
+    } else {
+      // No membership - apply the cost from DTO
+      vehicleLog.cost = updateVehicleLogDto.cost;
+    }
 
     const savedVehicleLog = await vehicleLog.save();
     
-    return {...savedVehicleLog.toObject(), vehicleType: vehicle.vehicleType};
+    const responseMessage = vehicleLog.hasMembership 
+      ? 'Vehicle has active membership - no charge applied'
+      : `Vehicle charged: $${vehicleLog.cost}`;
+    
+    return {
+      ...savedVehicleLog.toObject(), 
+      vehicleType: vehicle.vehicleType,
+      message: responseMessage
+    };
   }
 
   async getVehicleLogs(plateNumber: string, businessId: string) {
@@ -182,11 +231,18 @@ export class VehicleLogService {
   }
 
   async getActiveVehicles(businessId: string) {
-    return this.vehicleLogModel
+    const activeVehicles = await this.vehicleLogModel
       .find({ businessId, exitTime: null })
       .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .sort({ entryTime: -1 })
       .exec();
+    
+    return activeVehicles.map(log => ({
+      ...log.toObject(),
+      message: log.hasMembership 
+        ? 'Vehicle has active membership - no charge will be applied'
+        : 'Vehicle will be charged based on parking duration'
+    }));
   }
 
   async removeAllByBusinessId(businessId: string) {
@@ -202,7 +258,7 @@ export class VehicleLogService {
     
     console.log({startDate, endDate});
     
-    return this.vehicleLogModel
+    const logsByDate = await this.vehicleLogModel
       .find({
         businessId,
         exitTime: {
@@ -213,5 +269,12 @@ export class VehicleLogService {
       .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .sort({ entryTime: -1 })
       .exec();
+    
+    return logsByDate.map(log => ({
+      ...log.toObject(),
+      message: log.hasMembership 
+        ? 'Vehicle had active membership - no charge applied'
+        : `Vehicle charged: $${log.cost}`
+    }));
   }
 }
