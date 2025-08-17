@@ -24,6 +24,8 @@ class VehicleModel extends Document {
 
   @Prop({required: true, index: true, type: mongoose.Schema.Types.ObjectId, ref: 'BusinessModel'})
   businessId: string;
+
+  
 }
 
 export const VehicleSchema = SchemaFactory.createForClass(VehicleModel);

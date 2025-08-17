@@ -13,6 +13,7 @@ import { BusinessModule } from './business/business.module';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { VehicleLogModule } from './vehicle_log/vehicle_log.module';
 import { AccountingModule } from './accounting/accounting.module';
+import { MembershipModule } from './membership/membership.module';
 @Module({
   imports: [
     ConfigModuleNest.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -24,6 +25,7 @@ import { AccountingModule } from './accounting/accounting.module';
     VehicleModule,
     VehicleLogModule,
     AccountingModule,
+    MembershipModule,
 
   ],
   controllers: [AppController],
