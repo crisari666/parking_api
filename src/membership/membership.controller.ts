@@ -6,12 +6,13 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
+  Headers,
 } from '@nestjs/common';
 import { MembershipService } from './membership.service';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { ToggleMembershipDto } from './dto/toggle-membership.dto';
+import { UserHeader } from 'src/app/types/user-header.type';
 
 @Controller('membership')
 export class MembershipController {
@@ -25,6 +26,12 @@ export class MembershipController {
   @Get()
   findAll() {
     return this.membershipService.findAll();
+  }
+
+  @Get('active')
+  findActiveMemberships(@Headers('user') user: UserHeader) {
+    const businessId = user.business;
+    return this.membershipService.findActiveMembershipsByBusiness(businessId);
   }
 
   @Get('vehicle/:vehicleId/business/:businessId')

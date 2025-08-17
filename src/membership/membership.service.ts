@@ -86,4 +86,17 @@ export class MembershipService {
     
     return activeMembership;
   }
+
+  async findActiveMembershipsByBusiness(businessId: string): Promise<MembershipModel[]> {
+    const currentDate = new Date();
+    
+    return this.membershipModel
+      .find({
+        businessId,
+        enable: true,
+        dateEnd: { $gte: currentDate }
+      })
+      .sort({ dateStart: -1 })
+      .exec();
+  }
 }
