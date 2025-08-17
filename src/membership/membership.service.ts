@@ -1,16 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { ToggleMembershipDto } from './dto/toggle-membership.dto';
 import { MembershipModel } from '../app/schemas/membership.schema';
+import { VehicleModel } from '../app/schemas/vehicle.schema';
 
 @Injectable()
 export class MembershipService {
   constructor(
     @InjectModel(MembershipModel.name)
     private readonly membershipModel: Model<MembershipModel>,
+    @InjectModel(VehicleModel.name)
+    private readonly vehicleModel: Model<VehicleModel>,
   ) {}
 
   async create(createMembershipDto: CreateMembershipDto): Promise<MembershipModel> {
@@ -97,6 +100,34 @@ export class MembershipService {
         dateEnd: { $gte: currentDate }
       })
       .sort({ dateStart: -1 })
+      .exec();
+  }
+
+  async findMembershipsByVehiclePlate(plateNumber: string, businessId: string): Promise<MembershipModel[]> {
+    console.log({plateNumber, businessId});
+
+    // First, find the vehicle by plate number and business ID
+    const vehicle = await this.vehicleModel.findOne({
+      plateNumber: plateNumber,
+      businessId: new mongoose.Types.ObjectId(businessId)
+    });
+
+    console.log({vehicle});
+    
+
+    // If no vehicle found, return empty array
+    if (!vehicle) {
+      return [];
+    }
+
+    // Find memberships by vehicle ID
+    return this.membershipModel
+      .find({
+        vehicleId: vehicle._id,
+        businessId: businessId
+      })
+      .sort({ dateStart: -1 })
+      .limit(10)
       .exec();
   }
 }

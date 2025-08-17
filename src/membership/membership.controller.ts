@@ -34,6 +34,15 @@ export class MembershipController {
     return this.membershipService.findActiveMembershipsByBusiness(businessId);
   }
 
+  @Get('vehicle/plate/:plateNumber')
+  findMembershipsByVehiclePlate(
+    @Param('plateNumber') plateNumber: string,
+    @Headers('user') user: UserHeader,
+  ) {
+    const businessId = user.business;
+    return this.membershipService.findMembershipsByVehiclePlate(plateNumber.toUpperCase(), businessId);
+  }
+
   @Get('vehicle/:vehicleId/business/:businessId')
   findByVehicleAndBusiness(
     @Param('vehicleId') vehicleId: string,
