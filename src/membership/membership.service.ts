@@ -5,7 +5,7 @@ import { CreateMembershipDto } from './dto/create-membership.dto';
 import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { ToggleMembershipDto } from './dto/toggle-membership.dto';
 import { MembershipModel } from '../app/schemas/membership.schema';
-import { VehicleModel, VehicleType } from '../app/schemas/vehicle.schema';
+import { VehicleModel } from '../app/schemas/vehicle.schema';
 
 @Injectable()
 export class MembershipService {

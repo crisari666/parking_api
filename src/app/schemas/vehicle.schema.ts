@@ -25,10 +25,10 @@ class VehicleModel extends Document {
   @Prop({required: true, index: true, type: mongoose.Schema.Types.ObjectId, ref: 'BusinessModel'})
   businessId: string;
 
-  @Prop({required: true})
+  @Prop({required: false, default: ''})
   userName: string;
 
-  @Prop({required: true})
+  @Prop({required: false, default: ''})
   phone: string;
 }
 
