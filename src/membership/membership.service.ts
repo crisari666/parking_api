@@ -53,7 +53,13 @@ export class MembershipService {
       businessId: new mongoose.Types.ObjectId(businessId)
     });
     
-    return createdMembership.save();
+    const savedMembership = await createdMembership.save();
+    
+    // Populate the vehicle data before returning
+    return this.membershipModel
+      .findById(savedMembership._id)
+      .populate('vehicleId', 'plateNumber vehicleType userName phone')
+      .exec();
   }
 
   async findAll(): Promise<MembershipModel[]> {
@@ -155,6 +161,7 @@ export class MembershipService {
         enable: true,
         dateEnd: { $gte: currentDate }
       })
+      .populate('vehicleId', 'plateNumber vehicleType userName phone')
       .sort({ dateStart: -1 })
       .exec();
   }

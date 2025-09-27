@@ -36,7 +36,8 @@ export class VehicleLogService {
     if(vehicle.inParking) throw new BadRequestException('Vehicle is already in parking');
 
     // Check if vehicle has active membership
-    const activeMembership = await this.membershipService.findActiveMembership(vehicle._id.toString(), businessId);
+    const activeMembership = await this.membershipService.findActiveMembership(vehicle.plateNumber.toUpperCase(), businessId);
+
     
     if (activeMembership) {
       // Vehicle has active membership - no charge
@@ -183,6 +184,8 @@ export class VehicleLogService {
       throw new NotFoundException('No active vehicle log found');
     }
 
+    console.log({vehicleLog});
+
     const exitTime = new Date();
 
     // Calculate duration in minutes
@@ -196,7 +199,6 @@ export class VehicleLogService {
     vehicleLog.exitTime = exitTime;
     vehicle.inParking = false;
     vehicleLog.duration = durationInMinutes;
-    
     // Check if vehicle has active membership to avoid charging
     if (vehicleLog.hasMembership) {
       // Vehicle has membership - no cost
@@ -206,8 +208,7 @@ export class VehicleLogService {
       vehicleLog.cost = updateVehicleLogDto.cost;
     }
 
-    const savedVehicleLog = await vehicleLog.save();
-    
+    const savedVehicleLog = await vehicleLog.save();    
     const responseMessage = vehicleLog.hasMembership 
       ? 'Vehicle has active membership - no charge applied'
       : `Vehicle charged: $${vehicleLog.cost}`;
