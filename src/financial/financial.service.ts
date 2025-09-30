@@ -19,9 +19,7 @@ export class FinancialService {
     // Use the same date filtering logic as getLogsByDate
     const today = moment(date).utc().startOf('day');
     const startDate = today.add(5, 'hours').toDate();
-    const endDate = today.endOf('day').add(5, 'hours').toDate();
-
-    // Use aggregation for better performance - get only totals without detailed data
+    const endDate = today.endOf('day').add(5, 'hours').toDate();    
     const [vehicleLogsAggregation, vehicleTypeBreakdown, membershipsAggregation] = await Promise.all([
       // Get vehicle payments aggregation
       this.vehicleLogModel.aggregate([
@@ -36,17 +34,6 @@ export class FinancialService {
           }
         },
         {
-          $lookup: {
-            from: 'vehicles',
-            localField: 'vehicleId',
-            foreignField: '_id',
-            as: 'vehicle'
-          }
-        },
-        {
-          $unwind: '$vehicle'
-        },
-        {
           $group: {
             _id: null,
             totalPaidByVehicles: { $sum: '$cost' },
@@ -55,7 +42,7 @@ export class FinancialService {
           }
         }
       ]),
-      // Get vehicle type breakdown
+      // Get vehicle type breakdown with pipeline lookup
       this.vehicleLogModel.aggregate([
         {
           $match: {
@@ -69,9 +56,25 @@ export class FinancialService {
         },
         {
           $lookup: {
-            from: 'vehicles',
-            localField: 'vehicleId',
-            foreignField: '_id',
+            from: 'vehiclemodels',
+            let: { vehicleId: '$vehicleId' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: [{$toObjectId: '$$vehicleId'}, '$_id'] }
+                }
+              },
+              {
+                $project: {
+                  vehicleType: 1,
+                  plateNumber: 1,
+                  userName: 1,
+                  phone: 1,
+                  inParking: 1,
+                  lastLog: 1
+                }
+              }
+            ],
             as: 'vehicle'
           }
         },
@@ -82,7 +85,17 @@ export class FinancialService {
           $group: {
             _id: '$vehicle.vehicleType',
             count: { $sum: 1 },
-            totalCost: { $sum: '$cost' }
+            totalCost: { $sum: '$cost' },
+            vehicles: {
+              $push: {
+                plateNumber: '$vehicle.plateNumber',
+                userName: '$vehicle.userName',
+                phone: '$vehicle.phone',
+                inParking: '$vehicle.inParking',
+                lastLog: '$vehicle.lastLog',
+                cost: '$cost'
+              }
+            }
           }
         }
       ]),
@@ -105,8 +118,8 @@ export class FinancialService {
         }
       ])
     ]);
-
-    // Extract results or set defaults
+    
+    
     const vehicleData = vehicleLogsAggregation[0] || {
       totalPaidByVehicles: 0,
       totalVehiclesProcessed: 0,
@@ -119,10 +132,10 @@ export class FinancialService {
       averageMembershipValue: 0
     };
 
-    // Process vehicle type breakdown
+    // Process vehicle type breakdown with detailed vehicle information
     const vehicleTypeStats = {
-      car: { count: 0, totalCost: 0 },
-      motorcycle: { count: 0, totalCost: 0 }
+      car: { count: 0, totalCost: 0, vehicles: [] },
+      motorcycle: { count: 0, totalCost: 0, vehicles: [] }
     };
 
     vehicleTypeBreakdown.forEach(item => {
@@ -153,11 +166,11 @@ export class FinancialService {
       vehicleBreakdown: {
         car: {
           count: vehicleTypeStats.car.count,
-          totalCost: vehicleTypeStats.car.totalCost
+          totalCost: vehicleTypeStats.car.totalCost,
         },
         motorcycle: {
           count: vehicleTypeStats.motorcycle.count,
-          totalCost: vehicleTypeStats.motorcycle.totalCost
+          totalCost: vehicleTypeStats.motorcycle.totalCost,
         }
       }
     };
