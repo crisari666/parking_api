@@ -121,10 +121,11 @@ export class MembershipService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.membershipModel.findByIdAndDelete(id).exec();
+    const result = await this.membershipModel.findById(id).exec();
     if (!result) {
       throw new NotFoundException(`Membership with ID ${id} not found`);
     }
+    await result.updateOne({ enable: false });
   }
 
   async findActiveMembership(plateNumber: string, businessId: string): Promise<MembershipModel | null> {

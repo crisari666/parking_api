@@ -14,6 +14,7 @@ import { VehicleModule } from './vehicle/vehicle.module';
 import { VehicleLogModule } from './vehicle_log/vehicle_log.module';
 import { AccountingModule } from './accounting/accounting.module';
 import { MembershipModule } from './membership/membership.module';
+import { FinancialModule } from './financial/financial.module';
 @Module({
   imports: [
     ConfigModuleNest.forRoot({ isGlobal: true, envFilePath: '.env' }),
@@ -26,6 +27,7 @@ import { MembershipModule } from './membership/membership.module';
     VehicleLogModule,
     AccountingModule,
     MembershipModule,
+    FinancialModule,
 
   ],
   controllers: [AppController],
