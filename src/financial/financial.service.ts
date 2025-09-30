@@ -92,8 +92,7 @@ export class FinancialService {
           $match: {
             businessId: new mongoose.Types.ObjectId(businessId),
             enable: true,
-            dateStart: { $lte: endDate },
-            dateEnd: { $gte: startDate }
+            createdAt: { $lte: endDate, $gte: startDate }
           }
         },
         {
