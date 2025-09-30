@@ -55,7 +55,7 @@ export class VehicleLogService {
 
       return {
         ...vehicleLog.toObject(), 
-        vehicleType: vehicle.vehicleType,
+        vehicleType: createVehicleLogDto.vehicleType,
         message: 'Vehicle has active membership - no charge applied'
       };
     }
