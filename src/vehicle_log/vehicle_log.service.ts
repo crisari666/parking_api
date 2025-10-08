@@ -175,7 +175,7 @@ export class VehicleLogService {
   }
 
   async checkout(plateNumber: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
-    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId });
+    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId }).sort({ lastLog: -1 }).exec();
 
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
