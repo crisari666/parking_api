@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Headers } from '@nes
 import { VehicleLogService } from './vehicle_log.service';
 import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
 import { UpdateVehicleLogDto } from './dto/update-vehicle_log.dto';
+import { UpdateBusinessIdDto } from './dto/update-business-id.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
 
 @Controller('vehicle-log')
@@ -28,7 +29,16 @@ export class VehicleLogController {
     return this.vehicleLogService.getActiveVehicles(businessId);
   }
 
-  @Get(':id')
+  @Patch('update-business-id')
+  updateBusinessId(
+    @Body() updateBusinessIdDto: UpdateBusinessIdDto,
+  ) {
+    console.log({updateBusinessIdDto});
+    
+    return this.vehicleLogService.updateBusinessId(updateBusinessIdDto);
+  }
+
+  @Get(':id') 
   findOne(@Param('id') id: string, @Headers('user') user: UserHeader) {
     const businessId = user.business;
     return this.vehicleLogService.findOne(id, businessId);
@@ -89,4 +99,6 @@ export class VehicleLogController {
     const businessId = user.business;
     return this.vehicleLogService.getLogsByDate(date, businessId);
   }
+
+  
 }

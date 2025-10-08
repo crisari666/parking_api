@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
 import { UserRole } from 'src/app/schemas/user.schema';
-import { IsOptional, IsEnum, IsBoolean, IsEmail, IsString } from 'class-validator';
+import { IsOptional, IsEnum, IsBoolean, IsEmail, IsString, IsMongoId } from 'class-validator';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
@@ -27,4 +27,9 @@ export class UpdateUserByUserDto {
   @IsOptional()
   @IsString()
   password?: string;
+}
+
+export class UpdateUserBusinessDto {
+  @IsMongoId()
+  business: string;
 }

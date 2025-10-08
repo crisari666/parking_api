@@ -22,6 +22,11 @@ export class VehicleController {
     return this.vehicleService.findAll(businessId);
   }
 
+  @Get('business/:businessId')
+  findAllByBusinessId(@Param('businessId') businessId: string) {
+    return this.vehicleService.findAll(businessId);
+  }
+
   @Get('my-vehicles')
   findUserVehicles(@Headers('user') user: UserHeader) {
     const userId = user.uuid;
@@ -38,6 +43,16 @@ export class VehicleController {
   findByPlateNumber(@Param('plateNumber') plateNumber: string, @Headers('user') user: UserHeader) {
     const businessId = user.business;
     return this.vehicleService.findByPlateNumber(plateNumber.toUpperCase(), businessId);
+  }
+
+  @Get('plate/:plateNumber/all')
+  findAllByPlateNumber(@Param('plateNumber') plateNumber: string) {
+    return this.vehicleService.findAllByPlateNumber(plateNumber.toUpperCase());
+  }
+
+  @Get('business-ids')
+  findUniqueBusinessIds() {
+    return this.vehicleService.findUniqueBusinessIds();
   }
 
   @Patch('plate/:plateNumber/parking')

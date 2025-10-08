@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { CreateVehicleLogDto } from './dto/create-vehicle_log.dto';
 import { UpdateVehicleLogDto } from './dto/update-vehicle_log.dto';
+import { UpdateBusinessIdDto } from './dto/update-business-id.dto';
 import { VehicleLogModel } from 'src/app/schemas/vehicle_log.schema';
 import { VehicleModel } from 'src/app/schemas/vehicle.schema';
 import { MembershipService } from '../membership/membership.service';
@@ -132,7 +133,11 @@ export class VehicleLogService {
   }
 
   async getLastVehicleLog(plateNumber: string, businessId: string) {
-    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId: new mongoose.Types.ObjectId(businessId) });    
+    const vehicle = await this.vehicleModel
+      .findOne({ plateNumber, businessId: new mongoose.Types.ObjectId(businessId) })
+      .sort({ lastLog: -1 })
+      .exec();
+    
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
     }
@@ -140,7 +145,6 @@ export class VehicleLogService {
     const vehicleLog = await this.vehicleLogModel
       .findOne({ vehicleId: vehicle._id, businessId })
       .sort({ entryTime: -1 })
-      //.populate('vehicleId')
       .exec();
 
     if (!vehicleLog) {
@@ -162,6 +166,10 @@ export class VehicleLogService {
     return {
       ...vehicleLog.toObject(), 
       vehicleType: vehicle.vehicleType,
+      userName: vehicle.userName,
+      phone: vehicle.phone,
+      inParking: vehicle.inParking,
+      lastLog: vehicle.lastLog,
       message: responseMessage
     };
   }
@@ -277,5 +285,37 @@ export class VehicleLogService {
         ? 'Vehicle had active membership - no charge applied'
         : `Vehicle charged: $${log.cost}`
     }));
+  }
+
+  async updateBusinessId(updateBusinessIdDto: UpdateBusinessIdDto) {
+    const { from, to } = updateBusinessIdDto;
+    console.log({from, to});
+
+    // Validate that both business IDs are valid ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(from) || !mongoose.Types.ObjectId.isValid(to)) {
+      throw new BadRequestException('Invalid business ID format');
+    }
+
+    
+
+    // Update all vehicles with the old business ID
+    const vehicleUpdateResult = await this.vehicleModel.updateMany(
+      { businessId: from },
+      { businessId: to } 
+    );
+
+    // Update all vehicle logs with the old business ID
+    const vehicleLogUpdateResult = await this.vehicleLogModel.updateMany(
+      { businessId: from },
+      { businessId: to } 
+    );
+
+    return {
+      message: 'Business ID updated successfully',
+      vehiclesUpdated: vehicleUpdateResult.modifiedCount,
+      vehicleLogsUpdated: vehicleLogUpdateResult.modifiedCount,
+      from,
+      to
+    };
   }
 }

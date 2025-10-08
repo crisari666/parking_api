@@ -46,6 +46,10 @@ export class VehicleService {
     return this.vehicleModel.findOne({ plateNumber, businessId }).exec();
   }
 
+  async findAllByPlateNumber(plateNumber: string) {
+    return this.vehicleModel.find({ plateNumber }).exec();
+  }
+
   async update(id: string, updateVehicleDto: UpdateVehicleDto) {
     return this.vehicleModel.findByIdAndUpdate(id, updateVehicleDto, { new: true }).exec();
   }
@@ -68,5 +72,10 @@ export class VehicleService {
     console.log(update);
 
     return update;
+  }
+
+  async findUniqueBusinessIds(): Promise<string[]> {
+    const result = await this.vehicleModel.distinct('businessId');
+    return result;
   }
 }
