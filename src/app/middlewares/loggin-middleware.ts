@@ -14,16 +14,16 @@ export class LoggingInterceptor implements NestInterceptor {
     const req: Request = context.switchToHttp().getRequest();
     const res: Response = context.switchToHttp().getResponse();
 
-    const { method, url, headers, body } = req;
+    const { method, url} = req;
 
     const startTime = Date.now();
 
-    console.log('🟡 Incoming Request:', {
-      method,
-      url,
-      headers,
-      body,
-    });
+    // console.log('🟡 Incoming Request:', {
+    //   method,
+    //   url,
+    //   headers,
+    //   body,
+    // });
 
     return next.handle().pipe(
       tap((responseBody) => {
