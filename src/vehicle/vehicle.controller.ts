@@ -11,7 +11,7 @@ export class VehicleController {
   @Post()
   create(@Body() createVehicleDto: CreateVehicleDto, @Headers('user') user: UserHeader) {
     const businessId = user.business;
-    console.log({user});
+    // console.log({user});
     
     return this.vehicleService.create(createVehicleDto, businessId);
   }

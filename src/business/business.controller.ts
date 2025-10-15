@@ -10,7 +10,7 @@ export class BusinessController {
 
   @Post()
   create(@Body() createBusinessDto: CreateBusinessDto, @Headers('user') user: UserHeader) {
-    console.log({user});
+    // console.log({user});
     
     if (!user) {
       throw new NotFoundException('User is required');
@@ -47,7 +47,7 @@ export class BusinessController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto, @Headers('user') user: UserHeader) {
-    console.log({user, updateBusinessDto});
+    // console.log({user, updateBusinessDto});
     
     return this.businessService.update(id, updateBusinessDto, user.uuid);
   }

@@ -134,7 +134,7 @@ export class VehicleLogService {
 
   async getLastVehicleLog(plateNumber: string, businessId: string) {
     const vehicle = await this.vehicleModel
-      .findOne({ plateNumber, businessId: new mongoose.Types.ObjectId(businessId) })
+      .findOne({ plateNumber, businessId: new mongoose.Types.ObjectId(businessId), inParking: true })
       .sort({ lastLog: -1 })
       .exec();
     
@@ -175,7 +175,7 @@ export class VehicleLogService {
   }
 
   async checkout(plateNumber: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
-    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId }).sort({ lastLog: -1 }).exec();
+    const vehicle = await this.vehicleModel.findOne({ plateNumber, businessId, inParking: true }).sort({ lastLog: -1 }).exec();
 
     if (!vehicle) {
       throw new NotFoundException('Vehicle not found');
