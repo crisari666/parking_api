@@ -110,4 +110,26 @@ export class AuthService {
       })
     };
   }
+
+  async getCurrentUser(userId: string) {
+    const user = await this.userModel.findById(userId);
+    
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      business: user.business,
+      lastName: user.lastName,
+      token: await this.createJWT({
+        userId: user._id.toString(), 
+        role: user.role, 
+        business: user.business?.toString() ?? ""
+      })
+    };
+  }
 }

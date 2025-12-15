@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserModel } from 'src/app/schemas/user.schema';
+import { UserModel, UserRole } from 'src/app/schemas/user.schema';
 import { Model } from 'mongoose';
 import { PasswordUtil } from 'src/app/utils/passord.util';
 import { UpdateUserDto, UpdateUserStatusDto, UpdateUserByUserDto, UpdateUserBusinessDto } from './dto/update-user.dto';
@@ -27,7 +27,12 @@ export class UsersService {
     return newUser.save();
   }
 
-  async findAll() {
+  async findAll(user?: UserHeader) {
+    // If user role is 'user', return only users from the same business
+    if (user && user.role === UserRole.user && user.business) {
+      return this.userModel.find({ business: user.business }).select('-password').exec();
+    }
+    // Admin and other roles see all users
     return this.userModel.find().select('-password').exec();
   }
 

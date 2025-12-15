@@ -1,7 +1,8 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UserHeader } from 'src/app/types/user-header.type';
 
 @Controller('auth')
 export class AuthController {
@@ -20,5 +21,10 @@ export class AuthController {
   @Get('validate')
   async validateJWT() {
     return { valid: true };
+  }
+
+  @Get('me')
+  async getMe(@Headers('user') user: UserHeader) {
+    return this.authService.getCurrentUser(user.uuid);
   }
 }

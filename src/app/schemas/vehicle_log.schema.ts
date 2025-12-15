@@ -44,6 +44,12 @@ class VehicleLogModel extends Document {
 
   @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'MembershipModel', default: null})
   membershipId: string;
+
+  @Prop({type: Boolean, default: false, index: true})
+  deleted: boolean;
+
+  @Prop({type: Date, default: null})
+  deletedAt: Date;
 }
 
 export const VehicleLogSchema = SchemaFactory.createForClass(VehicleLogModel);

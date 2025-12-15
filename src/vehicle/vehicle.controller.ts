@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, ForbiddenException } from '@nestjs/common';
 import { VehicleService } from './vehicle.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { FindVehiclesDto } from './dto/find-vehicles.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
+import { UserRole } from 'src/app/schemas/user.schema';
 
 @Controller('vehicle')
 export class VehicleController {
@@ -53,6 +55,15 @@ export class VehicleController {
   @Get('business-ids')
   findUniqueBusinessIds() {
     return this.vehicleService.findUniqueBusinessIds();
+  }
+
+  @Post('find')
+  findVehicles(@Body() findVehiclesDto: FindVehiclesDto, @Headers('user') user: UserHeader) {
+    // Only admin users can search by businessId
+    if (findVehiclesDto.business && (!user || user.role !== UserRole.admin)) {
+      throw new ForbiddenException('Only admin users can find vehicles by businessId');
+    }
+    return this.vehicleService.findVehicles(findVehiclesDto);
   }
 
   @Patch('plate/:plateNumber/parking')

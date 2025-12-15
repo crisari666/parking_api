@@ -78,7 +78,7 @@ export class VehicleLogService {
 
   async findAll(businessId: string) {
     const vehicleLogs = await this.vehicleLogModel
-      .find({ businessId })
+      .find({ businessId, deleted: { $ne: true } })
       .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .exec();
     
@@ -92,7 +92,7 @@ export class VehicleLogService {
 
   async findOne(id: string, businessId: string) {
     const vehicleLog = await this.vehicleLogModel
-      .findOne({ _id: id, businessId })
+      .findOne({ _id: id, businessId, deleted: { $ne: true } })
       .populate('vehicleId')
       .exec();
 
@@ -106,7 +106,7 @@ export class VehicleLogService {
   async update(id: string, updateVehicleLogDto: UpdateVehicleLogDto, businessId: string) {
     const vehicleLog = await this.vehicleLogModel
       .findOneAndUpdate(
-        { _id: id, businessId },
+        { _id: id, businessId, deleted: { $ne: true } },
         updateVehicleLogDto,
         { new: true }
       )
@@ -132,6 +132,25 @@ export class VehicleLogService {
     return vehicleLog;
   }
 
+  async removeById(id: string) {
+    const vehicleLog = await this.vehicleLogModel
+      .findByIdAndUpdate(
+        id,
+        { 
+          deleted: true,
+          deletedAt: new Date()
+        },
+        { new: true }
+      )
+      .exec();
+
+    if (!vehicleLog) {
+      throw new NotFoundException('Vehicle log not found');
+    }
+
+    return vehicleLog;
+  }
+
   async getLastVehicleLog(plateNumber: string, businessId: string) {
     const vehicle = await this.vehicleModel
       .findOne({ plateNumber, businessId: new mongoose.Types.ObjectId(businessId), inParking: true })
@@ -143,7 +162,7 @@ export class VehicleLogService {
     }
 
     const vehicleLog = await this.vehicleLogModel
-      .findOne({ vehicleId: vehicle._id, businessId })
+      .findOne({ vehicleId: vehicle._id, businessId, deleted: { $ne: true } })
       .sort({ entryTime: -1 })
       .exec();
 
@@ -182,7 +201,7 @@ export class VehicleLogService {
     }
     
     const vehicleLog = await this.vehicleLogModel
-    .findOne({ vehicleId: vehicle._id, businessId, exitTime: null })
+    .findOne({ vehicleId: vehicle._id, businessId, exitTime: null, deleted: { $ne: true } })
     .sort({ entryTime: -1 })
     .exec();
     
@@ -234,14 +253,29 @@ export class VehicleLogService {
       throw new NotFoundException('Vehicle not found');
     }
     return this.vehicleLogModel
-      .find({ vehicleId: vehicle._id, businessId })
+      .find({ vehicleId: vehicle._id, businessId, deleted: { $ne: true } })
       .sort({ entryTime: -1 })
+      .exec();
+  }
+
+  async getVehicleLogsById(vehicleId: string) {
+    // Validate vehicle exists
+    const vehicle = await this.vehicleModel.findOne({ _id: vehicleId });
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle not found');
+    }
+    
+    return this.vehicleLogModel
+      .find({ vehicleId: new mongoose.Types.ObjectId(vehicleId), deleted: { $ne: true } })
+      .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
+      .sort({ entryTime: -1 })
+      .limit(50)
       .exec();
   }
 
   async getActiveVehicles(businessId: string) {
     const activeVehicles = await this.vehicleLogModel
-      .find({ businessId, exitTime: null })
+      .find({ businessId, exitTime: null, deleted: { $ne: true } })
       .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .sort({ entryTime: -1 })
       .exec();
@@ -273,13 +307,42 @@ export class VehicleLogService {
         exitTime: {
           $gte: startDate,
           $lte: endDate
-        }
+        },
+        deleted: { $ne: true }
       })
       .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
       .sort({ entryTime: -1 })
       .exec();
     
     return logsByDate.map(log => ({
+      ...log.toObject(),
+      message: log.hasMembership 
+        ? 'Vehicle had active membership - no charge applied'
+        : `Vehicle charged: $${log.cost}`
+    }));
+  }
+
+  async filterLogsByDateRange(dateStart: string, dateEnd: string, businessId: string) {
+    const startMoment = moment(dateStart).utc().startOf('day');
+    const startDate = startMoment.add(5, 'hours').toDate();
+    
+    const endMoment = moment(dateEnd).utc().endOf('day');
+    const endDate = endMoment.add(5, 'hours').toDate();
+    
+    const logsByDateRange = await this.vehicleLogModel
+      .find({
+        businessId,
+        exitTime: {
+          $gte: startDate,
+          $lte: endDate
+        },
+        deleted: { $ne: true }
+      })
+      .populate({path: 'vehicleId', select: 'plateNumber vehicleType'})
+      .sort({ entryTime: -1 })
+      .exec();
+    
+    return logsByDateRange.map(log => ({
       ...log.toObject(),
       message: log.hasMembership 
         ? 'Vehicle had active membership - no charge applied'

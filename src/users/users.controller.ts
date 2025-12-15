@@ -23,12 +23,13 @@ export class UsersController {
     if (!user || user.role === UserRole.worker) {
       throw new ForbiddenException('Only users with user role can create users via this endpoint');
     }
+    console.log({user});
     return this.usersService.createByUser(createUserByUserDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Headers('user') user: UserHeader) {
+    return this.usersService.findAll(user);
   }
 
   @Get('business/:businessId')

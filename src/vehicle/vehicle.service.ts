@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import mongoose from 'mongoose';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { FindVehiclesDto } from './dto/find-vehicles.dto';
 import { VehicleModel } from '../app/schemas/vehicle.schema';
 
 @Injectable()
@@ -77,5 +79,59 @@ export class VehicleService {
   async findUniqueBusinessIds(): Promise<string[]> {
     const result = await this.vehicleModel.distinct('businessId');
     return result;
+  }
+
+  async findVehicles(findVehiclesDto: FindVehiclesDto) {
+    const { plateNumber, business } = findVehiclesDto;
+    const plateNumberUpper = plateNumber.toUpperCase();
+    
+    const matchStage: any = { 
+      plateNumber: { 
+        $regex: plateNumberUpper, 
+        $options: 'i' 
+      } 
+    };
+    
+    if (business) {
+      matchStage.businessId = new mongoose.Types.ObjectId(business);
+    }
+    
+    const pipeline: any[] = [
+      {
+        $match: matchStage
+      },
+      {
+        $lookup: {
+          from: 'businessmodels',
+          let: { businessId: '$businessId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$_id', '$$businessId'] }
+              }
+            },
+            {
+              $project: {
+                businessName: 1
+              }
+            }
+          ],
+          as: 'business'
+        }
+      },
+      {
+        $unwind: {
+          path: '$business',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          businessId: 0
+        }
+      }
+    ];
+    
+    return this.vehicleModel.aggregate(pipeline).exec();
   }
 }
