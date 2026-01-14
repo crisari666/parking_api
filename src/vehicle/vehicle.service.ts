@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { FindVehiclesDto } from './dto/find-vehicles.dto';
-import { VehicleModel } from '../app/schemas/vehicle.schema';
+import { VehicleModel, VehicleType } from '../app/schemas/vehicle.schema';
 
 @Injectable()
 export class VehicleService {
@@ -133,5 +133,13 @@ export class VehicleService {
     ];
     
     return this.vehicleModel.aggregate(pipeline).exec();
+  }
+
+  async updateVehicleType(id: string, vehicleType: VehicleType) {
+    return this.vehicleModel.findByIdAndUpdate(
+      id,
+      { vehicleType },
+      { new: true }
+    ).exec();
   }
 }

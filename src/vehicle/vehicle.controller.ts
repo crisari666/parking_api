@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, ForbiddenException, ValidationPipe } from '@nestjs/common';
 import { VehicleService } from './vehicle.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { FindVehiclesDto } from './dto/find-vehicles.dto';
+import { UpdateVehicleTypeDto } from './dto/update-vehicle-type.dto';
 import { UserHeader } from 'src/app/types/user-header.type';
 import { UserRole } from 'src/app/schemas/user.schema';
 
@@ -81,6 +82,11 @@ export class VehicleController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVehicleDto: UpdateVehicleDto) {
     return this.vehicleService.update(id, updateVehicleDto);
+  }
+
+  @Patch(':id/vehicle-type')
+  updateVehicleType(@Param('id') id: string, @Body(new ValidationPipe()) updateVehicleTypeDto: UpdateVehicleTypeDto) {
+    return this.vehicleService.updateVehicleType(id, updateVehicleTypeDto.vehicleType);
   }
 
   @Delete(':id')
