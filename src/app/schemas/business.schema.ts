@@ -60,6 +60,9 @@ class BusinessModel extends Document {
 
   @Prop({ required: true })
   address: string;
+  
+  @Prop({ required: true })
+  footer: string;
 
   @Prop({ required: true })
   schedule: string;
