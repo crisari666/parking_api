@@ -9,6 +9,7 @@ import * as fs from 'fs'
 import { join } from 'path';
 import * as jwt from 'jsonwebtoken';
 import { BusinessModel } from 'src/app/schemas/business.schema';
+import { TokenValidationService } from 'src/app/middlewares/token-validation.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,7 @@ export class AuthService {
     @InjectModel(UserModel.name) private userModel: Model<UserModel>,
     @InjectModel(BusinessModel.name) private businessModel: Model<BusinessModel>,
     private readonly passwordUtil: PasswordUtil,
+    private readonly tokenValidationService: TokenValidationService,
   ) {}
 
 
@@ -108,6 +110,39 @@ export class AuthService {
         role: savedUser.role, 
         business: savedUser.business?.toString() ?? ""
       })
+    };
+  }
+
+  async renewToken(bearerToken: string) {
+    let payload: { uuid?: string };
+    try {
+      payload = await this.tokenValidationService.validateTokenAllowExpired(bearerToken);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+
+    const userId = payload.uuid;
+    if (!userId) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      business: user.business,
+      lastName: user.lastName,
+      token: await this.createJWT({
+        userId: user._id.toString(),
+        role: user.role,
+        business: user.business?.toString() ?? '',
+      }),
     };
   }
 
