@@ -167,7 +167,7 @@ export class VehicleLogService {
       .exec();
 
     if (!vehicleLog) {
-      throw new NotFoundException('No vehicle log found');
+      `throw new NotFoundException('No vehicle log found');`
     }
 
     // If the log has no exit time, update the duration
