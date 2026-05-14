@@ -13,10 +13,11 @@ export class AuthTokenMiddleware implements NestMiddleware {
       
       const token = req.headers.authorization?.split(' ')[1];
 
-      //console.log({token});
+      console.log({token});
       
       try {
         const payload = await this.tokenValidationService.validateToken(token);
+        console.log({payload});
         req.headers.user = payload;
         next();
       } catch (error) {
