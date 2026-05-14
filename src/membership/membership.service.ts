@@ -187,8 +187,8 @@ export class MembershipService {
     // Find memberships by vehicle ID
     return this.membershipModel
       .find({
-        vehicleId: vehicle._id,
-        businessId: businessId
+        vehicleId: new mongoose.Types.ObjectId(vehicle._id.toString()),
+        businessId: new mongoose.Types.ObjectId(businessId)
       })
       .sort({ dateStart: -1 })
       .limit(10)
